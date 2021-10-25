@@ -1,0 +1,25 @@
+{
+  "name": "apixp",
+  "version": "1.0.0",
+  "description": "Fast Web API, RESTful, pure JSON, OpenAPI 3.1 ",
+  "main": "index.js",
+  "bin": {
+    "apixp": "commands/apixp"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rebelstackio/apixp.git"
+  },
+  "keywords": [
+    "openapi"
+  ],
+  "author": "Rein Petersen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rebelstackio/apixp/issues"
+  },
+  "homepage": "https://github.com/rebelstackio/apixp#readme"
+}
