@@ -110,6 +110,7 @@ see `.escape(str)` : https://www.npmjs.com/package/json-pointer#escapestr
 
 Passing the pointer ( reference ) to the single apixpdoc should be performant.
 
+testing json pointer : https://www.jsonquerytool.com/
 
 
 
