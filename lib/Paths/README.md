@@ -58,7 +58,7 @@ see:
 	"servers": {
 		"url":"/v2",
 		"description":"relative server url"
-	}
+	},
 	"components": {
 		"parameters": {
 			"Pusername": {
@@ -67,8 +67,7 @@ see:
 				"description": "username to fetch",
 				"required": true,
 				"schema": { "type": "string", "pattern": "^[a-z0-9_-]{3,15}$" }
-			}
-		},
+			},
 			"Puserid": {
 				"name": "userid",
 				"in": "path",
@@ -77,7 +76,6 @@ see:
 				"schema": { "type": "integer", "miniumum": "0" }
 			}
 		}
-
 	},
 	"paths": {
 		"/foo/bar/{username}": {
@@ -96,10 +94,24 @@ see:
 			"get":{ "parameters":{ "$ref":"#/components/parameters/Puserid" } },
 			"put":{ "parameters":{ "$ref":"#/components/parameters/Puserid" } },
 			"post":{ "parameters":{ "$ref":"#/components/parameters/Puserid" } }
-		},
+		}
 	}
 }
 ```
+
+## Passing apixpdoc and pointer to constructor with Json Pointer
+```js
+let paths = new Paths( apixpdoc ); /* constructor knows to find paths at #/paths
+```
+
+Dynamic key (hash) needs to be escaped. For example, an escaped pointer having `/` character migth look like this: `#/paths/~1foo~1bar~1{username}`
+
+see `.escape(str)` : https://www.npmjs.com/package/json-pointer#escapestr
+
+Passing the pointer ( reference ) to the single apixpdoc should be performant.
+
+
+
 
 If you think about it, the "servers" are apart of the path and must also be matching,
 see https://spec.openapis.org/oas/v3.1.0#server-object
