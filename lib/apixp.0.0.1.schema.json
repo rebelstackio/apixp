@@ -1,0 +1,10 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "http://apixp.io/schemas/apixp.0.0.1.schema.json",
+	"type":"object",
+	"allOf": [{ "$ref": "openapi.3.1.0.schema.json" }],
+	"properties": {
+		"baz": { "type": "string" }
+	}
+}
+

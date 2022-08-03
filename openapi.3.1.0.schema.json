@@ -1,32 +1,32 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"$id": "openapi.3.1.0.schema.json",
-	"@context": {},
 	"definitions": {
 		"Semver": {
 			"type": "string",
-			"regex": "^(?P<major>0|[1-9]\\d*)\\.(?P<minor>0|[1-9]\\d*)\\.(?P<patch>0|[1-9]\\d*)(?:-(?P<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+			"pattern": "^(?<major>0|[1-9]\\d*)\\.(?<minor>0|[1-9]\\d*)\\.(?<patch>0|[1-9]\\d*)(?:-(?<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+		},
+		"URI": {
+			"type": "string",
+			"format": "uri"
 		},
 		"Contact": {
 			"type": "object",
 			"properties": {
 				"name": { "type": "string" },
-				"url": { "type": "string", "format": "url" },
+				"url": { "type": "string", "format": "uri" },
 				"email": { "type": "string", "format": "email" }
-			}, "required": []
+			}, "required": ["name"]
 		},
 		"Encoding": {
 			"type":"object",
 			"properties": {
 				"contentType": { "type":"string" },
 				"headers": {
-					"type":"object",
-					"additionalProperties": {
-						"oneOf": [
-							{ "$ref": "#/definitions/Header" },
-							{ "$ref": "#/definitions/Reference" }
-						]
-					}
+					"oneOf": [
+						{ "$ref": "#/definitions/Header" },
+						{ "$ref": "#/definitions/Reference" }
+					]
 				},
 				"style": { "type":"string" },
 				"explode": { "type":"boolean" },
@@ -60,6 +60,7 @@
 			}, "required": ["url"]
 		},
 		"License": {
+			"$comment":"see SPDX for possible enum/constants",
 			"type":"object",
 			"properties": {
 				"name": { "type": "string" },
@@ -93,42 +94,36 @@
 			}
 		},
 		"Link": {
+			"type": "object",
 			"oneOf": [
 				{
 					"type":"object",
 					"properties": {
-						"operationRef": { "type":"string", "format":"uri" },
-						"parameters": {
-							"type":"object",
-							"additionalProperties": {
-								"type":["number","string","boolean","object","array", "null"]
-							}
-						},
-						"requestBody": {
-							"type":["number","string","boolean","object","array", "null"]
-						},
-						"description": { "type":"string" },
-						"server": { "$ref": "#/definitions/Server" }
-					}, "required": ["operationRef"]
+						"operationRef": { "type":"string", "format":"uri" }
+					},
+					"required": ["operationRef"]
 				},
 				{
 					"type":"object",
 					"properties": {
-						"operationId": { "type":"string" },
-						"parameters": {
-							"type":"object",
-							"additionalProperties": {
-								"type":["number","string","boolean","object","array","null"]
-							}
-						},
-						"requestBody": {
-							"type":["number","string","boolean","object","array","null"]
-						},
-						"description": { "type":"string" },
-						"server": { "$ref": "#/definitions/Server" }
-					}, "required": ["operationId"]
+						"operationId": { "type":"string" }
+					},
+					"required": ["operationId"]
 				}
-			]
+			],
+			"properties": {
+				"parameters": {
+					"type":"object",
+					"additionalProperties": {
+						"type":["number","string","boolean","object","array", "null"]
+					}
+				},
+				"requestBody": {
+					"type":["number","string","boolean","object","array", "null"]
+				},
+				"description": { "type":"string" },
+				"server": { "$ref": "#/definitions/Server" }
+			}
 		},
 		"Media": {
 			"type":"object",
@@ -163,7 +158,8 @@
 				"enum": { "type": "string" },
 				"default": { "type": "string" },
 				"description": { "type": "string" }
-			}, "required": ["default"]
+			},
+			"required": ["default"]
 		},
 		"Server": {
 			"type": "object",
@@ -176,7 +172,8 @@
 						"$ref": "#/definitions/ServerVariable"
 					}
 				}
-			}, "required": ["url"]
+			},
+			"required": ["url"]
 		},
 		"Parameter": {
 			"type": "object",
@@ -184,26 +181,34 @@
 			"properties": {
 				"name": { "type":"string" },
 				"in": { "enum":["query","header","path","cookie"] }
-			}, "required": ["in"]
+			},
+			"required": ["in"]
 		},
 		"Operation": {
 			"type": "object",
 			"properties": {
-				"tags": {
-					"type": "array",
+				"tags":         { "type": "array",
 					"items": { "type": "string" }
 				},
-				"summary": { "type": "string" },
-				"description": { "type": "string" },
-				"externalDocs": {
-					"$ref": "#/definitions/ExternalDocumentation"
-				},
-				"operationId": { "type": "string" },
-				"parameters": {
-					"type": "array",
+				"summary":      { "type": "string" },
+				"description":  { "type": "string" },
+				"externalDocs": { "$ref": "#/definitions/ExternalDocumentation" },
+				"operationId":  { "type": "string" },
+				"parameters":   { "type": "array",
 					"items": {
 						"$ref": "#/definitions/Parameter"
 					}
+				},
+				"requestBody":  { "$ref": "#/definitions/RequestBody" },
+				"responses":    {
+					"type": "object",
+					"patternProperties": {
+						"^1[0-9X][0-9X]$": { "$ref": "#/definitions/Response" },
+						"^2[0-9X][0-9X]$": { "$ref": "#/definitions/Response" },
+						"^3[0-9X][0-9X]$": { "$ref": "#/definitions/Response" },
+						"^4[0-9X][0-9X]$": { "$ref": "#/definitions/Response" },
+						"^5[0-9X][0-9X]$": { "$ref": "#/definitions/Response" }
+					}, "additionalProperties": false
 				}
 			}
 		},
@@ -219,14 +224,15 @@
 			"type":"object",
 			"properties": {
 				"description":{ "type":"string" },
-				"content":{
-					"type":"object",
+				"content": {
+					"type": "object",
 					"additionalProperties": {
 						"$ref": "#/definitions/Media"
 					}
 				},
 				"required": { "type":"boolean" }
-			}, "required": ["content"]
+			},
+			"required": ["content"]
 		},
 		"Response": {
 			"type":"object",
@@ -256,24 +262,25 @@
 						]
 					}
 				}
-			}, "required": ["description"]
+			},
+			"required": ["description"]
 		},
-		"Path": {
+		"PathItem": {
 			"type": "object",
 			"properties": {
-				"$ref": { "type": "string", "format":"uri-reference" },
-				"summary": { "type": "string" },
+				"$ref":        { "type": "string", "format":"uri-reference" },
+				"summary":     { "type": "string" },
 				"description": { "type": "string" },
-				"get": { "$ref": "#/definitions/Operation" },
-				"put": { "$ref": "#/definitions/Operation" },
-				"post": { "$ref": "#/definitions/Operation" },
-				"delete": { "$ref": "#/definitions/Operation" },
-				"options": { "$ref": "#/definitions/Operation" },
-				"head": { "$ref": "#/definitions/Operation" },
-				"patch": { "$ref": "#/definitions/Operation" },
-				"trace": { "$ref": "#/definitions/Operation" },
-				"servers": { "$ref": "#/definitions/Server" },
-				"parameters": {
+				"get":         { "$ref": "#/definitions/Operation" },
+				"put":         { "$ref": "#/definitions/Operation" },
+				"post":        { "$ref": "#/definitions/Operation" },
+				"delete":      { "$ref": "#/definitions/Operation" },
+				"options":     { "$ref": "#/definitions/Operation" },
+				"head":        { "$ref": "#/definitions/Operation" },
+				"patch":       { "$ref": "#/definitions/Operation" },
+				"trace":       { "$ref": "#/definitions/Operation" },
+				"servers":     { "$ref": "#/definitions/Server" },
+				"parameters":  {
 					"type": "array",
 					"items": {
 						"oneOf": [
@@ -288,7 +295,7 @@
 			"type": "object",
 			"additionalProperties": {
 				"oneOf": [
-					{ "$ref": "#/definitions/Path" },
+					{ "$ref": "#/definitions/PathItem" },
 					{ "$ref": "#/definitions/Reference" }
 				]
 			}
@@ -297,12 +304,15 @@
 			"type": "object",
 			"properties": {
 				"schemas": {
+					"type": "object",
 					"additionalProperties": { "$ref": "#/definitions/Schema" }
 				},
 				"responses": {
+					"type": "object",
 					"additionalProperties": { "$ref": "#/definitions/Response" }
 				},
 				"parameters": {
+					"type": "object",
 					"additionalProperties": {
 						"oneOf": [
 							{ "$ref": "#/definitions/Parameter" },
@@ -311,7 +321,9 @@
 					}
 				},
 				"examples": {
+					"type": "object",
 					"additionalProperties": {
+						"type": "object",
 						"oneOf": [
 							{ "$ref": "#/definitions/Example" },
 							{ "$ref": "#/definitions/Reference" }
@@ -319,6 +331,7 @@
 					}
 				},
 				"requestBodies": {
+					"type": "object",
 					"additionalProperties": {
 						"oneOf": [
 							{ "$ref": "#/definitions/RequestBody" },
@@ -327,6 +340,7 @@
 					}
 				},
 				"headers": {
+					"type": "object",
 					"additionalProperties": {
 						"oneOf": [
 							{ "$ref": "#/definitions/Header" },
@@ -335,6 +349,7 @@
 					}
 				},
 				"securitySchemes": {
+					"type": "object",
 					"additionalProperties": {
 						"oneOf": [
 							{ "$ref": "#/definitions/SecurityScheme" },
@@ -343,6 +358,7 @@
 					}
 				},
 				"links": {
+					"type": "object",
 					"additionalProperties": {
 						"oneOf": [
 							{ "$ref": "#/definitions/Link" },
@@ -351,6 +367,7 @@
 					}
 				},
 				"callbacks": {
+					"type": "object",
 					"additionalProperties": {
 						"oneOf": [
 							{ "$ref": "#/definitions/Callback" },
@@ -359,31 +376,52 @@
 					}
 				},
 				"pathItems": {
+					"type": "object",
 					"additionalProperties": {
 						"oneOf": [
-							{ "$ref": "#/definitions/Path" },
+							{ "$ref": "#/definitions/PathItem" },
 							{ "$ref": "#/definitions/Reference" }
 						]
 					}
 				}
-			}, "required": []
+			},
+			"required": []
 		},
-		"OauthFlow": {
+		"OAuth_Flow": {
 			"type": "object",
 			"properties": {
-				"authorizationUrl": { "type":"string" },
-				"tokenUrl": { "type":"string", "format": "url" },
-				"refreshUrl": { "type":"string", "format": "url" }
-			}, "required": ["authorizationUrl","tokenUrl","scopes"]
+				"refreshUrl": { "type": "string", "format": "url" },
+				"scopes": {
+					"type": "object",
+					"additionalProperties": { "type": "string" }
+				}
+			},
+			"required": ["scopes"]
 		},
-		"OauthFlows": {
-			"type":"object",
+		"OAuth_Flow_implicit": {
+			"type": "object",
+			"allOf":[ { "$ref": "#/definitions/OAuth_Flow" } ],
 			"properties": {
-				"implicit": { "$ref": "#/definitions/OauthFlow" },
-				"password": { "$ref": "#/definitions/OauthFlow" },
-				"clientCredentials": { "$ref": "#/definitions/OauthFlow" },
-				"authorizationCode": { "$ref": "#/definitions/OauthFlow" }
-			}
+				"authorizationUrl": { "type":"string", "format": "url" }
+			},
+			"required": ["authorizationUrl"]
+		},
+		"OAuth_Flow_authcode": {
+			"type": "object",
+			"allOf":[ { "$ref": "#/definitions/OAuth_Flow" } ],
+			"properties": {
+				"authorizationUrl": { "type": "string", "format": "url" },
+				"tokenUrl": { "type": "string", "format": "url" }
+			},
+			"required": ["authorizationUrl","tokenUrl"]
+		},
+		"OAuth_Flow_password_clientcreds": {
+			"type": "object",
+			"allOf":[ { "$ref": "#/definitions/OAuth_Flow" } ],
+			"properties": {
+				"tokenUrl": { "type": "string", "format": "url" }
+			},
+			"required": ["tokenUrl"]
 		},
 		"SecurityRequirement": {
 			"type": "object",
@@ -395,14 +433,89 @@
 			"type":"object",
 			"properties": {
 				"type": { "enum":["apiKey","http","mutualTLS","oauth2","openIdConnect"] },
-				"description": { "type":"string" },
-				"name": { "type":"string" },
-				"in": { "enum":[ "query","header","cookie" ] },
-				"scheme": { "type":"string" },
-				"bearerFormat":{ "type":"string" },
-				"flows": { "$ref": "#/definitions/OauthFlows" },
-				"openIdConnectUrl": { "type":"string", "format": "uri" }
-			}, "required": ["type","name","in","scheme","flows","openidConnectUrl"]
+				"description": { "type":"string" }
+			},
+			"required": ["type"],
+			"allOf": [
+				{
+					"if": {
+						"properties": { "type": { "const": "apiKey" } }
+					}, "then": {
+						"properties": {
+							"name": { "type":"string" },
+							"in": { "enum":[ "query","header","cookie" ] }
+						}, "required":["name","in"]
+					}
+				},
+				{
+					"if": {
+						"properties": { "type": { "const": "http" } }
+					}, "then": {
+						"properties": {
+							"scheme": {
+								"enum": [
+									"Basic","Bearer","Digest","HOBA","Mutual","Negotiate","OAuth","SCRAM-SHA-1","SCRAM-SHA-256","vapid"
+								]
+							}
+						}, "required":["scheme"],
+						"if": {
+							"properties": {
+								"scheme": { "const": "Bearer"}
+							}
+						}, "then": {
+							"properties": {
+								"bearerFormat": {
+									"type": "string"
+								}
+							}, "required":["bearerFormat"]
+						}
+					}
+				},
+				{
+					"if": {
+						"properties": { "type": { "const": "openIdConnect" } }
+					}, "then": {
+						"properties": {
+							"openIdConnectUrl": {
+								"type": "string", "format": "uri"
+							}
+						}, "required":["openIdConnectUrl"]
+					}
+				},
+				{
+					"if": {
+						"properties": { "type": { "const": "oauth2" } }
+					}, "then": {
+						"properties": {
+							"flows": {
+								"type": "object",
+								"oneOf": [
+									{
+										"properties": {
+											"implicit" : { "$ref": "#/definitions/OAuth_Flow_implicit" }
+										}
+									},
+									{
+										"properties": {
+											"password": { "$ref": "#/definitions/OAuth_Flow_password_clientcreds" }
+										}
+									},
+									{
+										"properties": {
+											"clientCredentials" : { "$ref": "#/definitions/OAuth_Flow_password_clientcreds" }
+										}
+									},
+									{
+										"properties": {
+											"authorizationCode" : { "$ref": "#/definitions/OAuth_Flow_authcode" }
+										}
+									}
+								]
+							}
+						}, "required":["flows"]
+					}
+				}
+			]
 		},
 		"Tag": {
 			"type": "object",
@@ -415,24 +528,34 @@
 	},
 	"type": "object",
 	"properties": {
-		"$schema": { "type":"string", "format":"uri" },
-		"openapi": { "$ref": "#/definitions/Semver" },
-		"info": { "$ref": "#/definitions/Info" },
-		"servers": {
+		"$schema":           { "type": "string", "format":"uri" },
+		"openapi":           { "$ref": "#/definitions/Semver" },
+		"jsonSchemaDialect": {
+			"type": "string",
+			"format":"uri"
+		},
+		"info":              { "$ref": "#/definitions/Info" },
+		"servers":           {
 			"type": "array",
 			"items": { "$ref": "#/definitions/Server" }
 		},
-		"paths": {
+		"paths":             {
 			"type": "object",
-			"additionalProperties": { "$ref": "#/definitions/Path" }
+			"patternProperties": {
+				"^\\\/(?!-)(?:[a-zA-Z0-9-]+|{\\w+})(?<!-)(?:\\\/(?!-)(?:[a-zA-Z0-9-]+|{\\w+})(?<!-))*(\\\/(?!-\\.)[a-zA-Z0-9-\\.]+(?<!-\\.))?$": {
+					"$ref": "#/definitions/PathItem"
+				}
+			}, "additionalProperties": false
 		},
-		"webhooks": {
+		"webhooks":          {
 			"type": "object",
-			"additionalProperties": { "$ref": "#/definitions/Path" }
+			"additionalProperties": { "$ref": "#/definitions/PathItem" }
 		},
-		"components": { "$ref": "#/definitions/Components" },
-		"security": { "$ref": "#/definitions/SecurityRequirement" },
-		"tags": { "$ref": "#/definitions/Tag" },
-		"externalDocs": { "$ref": "#/definitions/ExternalDocumentation" }
-	}
+		"components":        { "$ref": "#/definitions/Components" },
+		"security":          { "$ref": "#/definitions/SecurityRequirement" },
+		"tags":              { "$ref": "#/definitions/Tag" },
+		"externalDocs":      { "$ref": "#/definitions/ExternalDocumentation" }
+	},
+	"required": ["openapi","info"]
 }
+

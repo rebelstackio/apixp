@@ -151,3 +151,55 @@ can periodically re-order the Map for faster matching/retrieval of most common p
 As we use the Map to match keys, a string key will simply be an equality match, a regex key will be a regex match, an object key
 will be a json schema match. This is stroke of genius.
 
+
+
+### patternProperties making trouble
+
+This more accurate regex is not working ( opening escape backslash seems to disappear)
+```
+"^\\\/(?!-)(?:[a-zA-Z0-9-]+|{\\w+})(?<!-)(?:\\\/(?!-)(?:[a-zA-Z0-9-]+|{\\w+})(?<!-))*(\\\/(?!-\\.)[a-zA-Z0-9-\\.]+(?<!-\\.))?$"
+
+```
+
+This basic one also fails:
+```
+"^\\\/\\.*$"
+```
+
+Proving it in vanilla js (escape-crazy):
+```js
+var schema = `{
+	"type": "object",
+	"patternProperties": {
+		"^\\\\\/(?!-)(?:[a-zA-Z0-9-]+|{\\\\w+})(?<!-)(?:\\\\\/(?!-)(?:[a-zA-Z0-9-]+|{\\\\w+})(?<!-))*(\\\\\/(?!-\\\\.)[a-zA-Z0-9-\\\\.]+(?<!-\\\\.))?$": {
+			"type": "object"
+		}
+	}, "additionalProperties": false
+}`;
+var parsed = JSON.parse(schema);
+var regex = new RegExp(Object.keys(parsed.patternProperties)[0]);
+let match = "/test/{templatearg}/test".match(regex);
+console.assert(match.length > 0,{parsed,regex,match});
+```
+This extra escaping works in javascript, but same regex string in `patternProperties` still reports `Syntax Error: Invalid regular expression: Lone quantifier brackets`
+
+
+```javascript
+const jp = require('jsonpath');
+// NOTE: regex in JSON/Javascript string is a bit squirrely
+class Apixp {
+	static fudge_regex_str( data, paths ) {
+		function addslashes( str ) {
+			return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+		}
+		paths.forEach( function( path ) {
+			jp.paths( data, paths ).forEach( function( element ) {
+				if ( typeof element === 'String' ) {
+					addslashes( element );
+				}
+			});
+		});
+		return data;
+	}
+}
+```

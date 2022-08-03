@@ -1,0 +1,35 @@
+{
+	"openapi": "3.1.0",
+	"jsonSchemaDialect": "http://json-schema.org/draft-07/schema#",
+	"info": {
+		"title": "info.title",
+		"summary": "info.summary",
+		"description": "info.description",
+		"termsOfService": "info.termsOfService",
+		"contact": {
+			"name": "info.contact.name",
+			"url": "http://info.contact.url",
+			"email": "info.contact.email@domain.com"
+		},
+		"license": {
+			"name": "info.license.name",
+			"identifier": "info.license.identifier",
+			"url": "http://info.license.url"
+		},
+		"version": "0.0.1-info.version"
+	},
+	"servers": [
+		{
+			"url": "http://localhost",
+			"description": "develop"
+		},
+		{
+			"url": "http://apixp.io",
+			"description": "production"
+		}
+	],
+	"paths": {
+		"/test/{testpatharg}/test": {}
+	}
+}
+

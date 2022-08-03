@@ -1,0 +1,375 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "http://apixp.io/schemas/openapi.3.1.0.schema.json",
+	"$defs": {
+		"Semver": {
+			"type": "string",
+			"pattern": "^(?<major>0|[1-9]\\d*)\\.(?<minor>0|[1-9]\\d*)\\.(?<patch>0|[1-9]\\d*)(?:-(?<prerelease>(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+		},
+		"Contact": {
+			"type": "object",
+			"properties": {
+				"name": { "type": "string" },
+				"url": { "type": "string", "format": "uri" },
+				"email": { "type": "string", "format": "email" }
+			}, "required": ["name"]
+		},
+		"License": {
+			"$comment":"see SPDX for possible enum/constants",
+			"type":"object",
+			"properties": {
+				"name": { "type": "string" },
+				"identifier": { "type": "string" },
+				"url": { "type": "string", "format":"uri" }
+			}, "required": ["name"]
+		},
+		"Info": {
+			"type": "object",
+			"properties": {
+				"title": { "type": "string" },
+				"summary": { "type": "string" },
+				"description": { "type": "string" },
+				"termsOfService": { "type": "string" },
+				"contact": { "$ref": "#/$defs/Contact" },
+				"license": { "$ref": "#/$defs/License" },
+				"version": { "$ref": "#/$defs/Semver" }
+			},
+			"required": [ "title","version" ]
+		},
+		"ServerVariable": {
+			"type": "object",
+			"properties": {
+				"enum": { "type": "string" },
+				"default": { "type": "string" },
+				"description": { "type": "string" }
+			},
+			"required": ["default"]
+		},
+		"Server": {
+			"type": "object",
+			"properties": {
+				"url": { "type": "string", "format": "uri" },
+				"description": { "type": "string" },
+				"variables": { 
+					"type": "object",
+					"additionalProperties": {
+						"$ref": "#/$defs/ServerVariable"
+					}
+				}
+			},
+			"required": ["url"]
+		},
+		"ExternalDocumentation": {
+			"type": "object",
+			"properties": {
+				"description": { "type":"string" },
+				"url": { "type":"string", "format":"uri" }
+			}, "required": ["url"]
+		},
+		"Discriminator": {
+			"type": "object",
+			"properties": {
+				"propertyName": {
+					"type": "string"
+				},
+				"mapping": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"XML": {
+			"type": "object",
+			"properties": {
+				"name": "string",
+				"namespace": "string",
+				"prefix": "string",
+				"attribute": "boolean",
+				"wrapped": "boolean"
+			}
+		},
+		"Schema": {
+			"type": "object",
+			"properties": {
+				"discriminator": {
+					"$ref": "#/$defs/Discriminator"
+				},
+				"XML": {
+					"$ref": "#/$defs/XML"
+				},
+				"externalDocs": {
+					"$ref": "#/$defs/ExternalDocumentation"
+				},
+				"examples": {
+					"type":"object",
+					"additionalProperties": {
+						"oneOf": [
+							{ "$ref": "#/$defs/Example" },
+							{ "$ref": "#/$defs/Reference" }
+						]
+					}
+				}
+			}
+		},
+		"Header": {
+			"type": "object",
+			"properties": {
+				"description": { "type":"string" },
+				"required": { "type":"boolean" },
+				"deprecated": { "type":"boolean" },
+				"style": { "type":"string" },
+				"explode": { "type":"boolean" },
+				"allowReserved": { "type":"boolean" },
+				"schema": { "$ref":"#/$defs/Schema" }
+			}
+		},
+		"Reference": {
+			"type":"object",
+			"properties": {
+				"$ref": { "type":"string", "format": "uri-reference" },
+				"summary": { "type":"string" },
+				"description": { "type":"string" }
+			}
+		},
+		"Example": {
+			"type":"object",
+			"oneOf": [
+				{
+					"properties": {
+						"summary": { "type": "string" },
+						"description": { "type": "string" },
+						"value": { "type":["number","string","boolean","object","array", "null"] }
+					}
+				},
+				{
+					"properties": {
+						"summary": { "type": "string" },
+						"description": { "type": "string" },
+						"externalValue": { "type":"string", "format": "uri" }
+					}
+				}
+			]
+		},
+		"Encoding": {
+			"type":"object",
+			"properties": {
+				"contentType": { "type":"string" },
+				"headers": {
+					"oneOf": [
+						{ "$ref": "#/$defs/Header" },
+						{ "$ref": "#/$defs/Reference" }
+					]
+				},
+				"style": { "type":"string" },
+				"explode": { "type":"boolean" },
+				"allowReserved": { "type":"boolean" }
+			}
+		},
+		"Media": {
+			"type":"object",
+			"properties": {
+				"schema": { "type":"object" },
+				"example": {
+					"type":["number","string","boolean","object","array","null"]
+				},
+				"examples": {
+					"type":"object",
+					"additionalProperties": {
+						"oneOf": [
+							{ "$ref": "#/$defs/Example" },
+							{ "$ref": "#/$defs/Reference" }
+						]
+					}
+				},
+				"encoding": {
+					"type":"object",
+					"additionalProperties": {
+						"$ref": "#/$defs/Encoding"
+					}
+				}
+			}
+		},
+		"Link": {
+			"type": "object",
+			"oneOf": [
+				{
+					"type":"object",
+					"properties": {
+						"operationRef": { "type":"string", "format":"uri" }
+					},
+					"required": ["operationRef"]
+				},
+				{
+					"type":"object",
+					"properties": {
+						"operationId": { "type":"string" }
+					},
+					"required": ["operationId"]
+				}
+			],
+			"properties": {
+				"parameters": {
+					"type":"object",
+					"additionalProperties": {
+						"type":["number","string","boolean","object","array", "null"]
+					}
+				},
+				"requestBody": {
+					"type":["number","string","boolean","object","array", "null"]
+				},
+				"description": { "type":"string" },
+				"server": { "$ref": "#/$defs/Server" }
+			}
+		},
+		"Response": {
+			"type":"object",
+			"properties": {
+				"description": { "type":"string" },
+				"headers": {
+					"type":"object",
+					"additionalProperties": {
+						"oneOf": [
+							{ "$ref": "#/$defs/Header" },
+							{ "$ref": "#/$defs/Reference" }
+						]
+					}
+				},
+				"content": {
+					"type":"object",
+					"additionalProperties": {
+						"$ref": "#/$defs/Media"
+					}
+				},
+				"links": {
+					"type":"object",
+					"additionalProperties": {
+						"oneOf": [
+							{"$ref": "#/$defs/Link" },
+							{"$ref": "#/$defs/Reference" }
+						]
+					}
+				}
+			},
+			"required": ["description"]
+		},
+		"Parameter": {
+			"type": "object",
+			"allOf": [{ "$ref": "#/$defs/Header" }],
+			"properties": {
+				"name": { "type":"string" },
+				"in": { "enum":["query","header","path","cookie"] }
+			},
+			"required": ["in"]
+		},
+		"RequestBody": {
+			"type":"object",
+			"properties": {
+				"description":{ "type":"string" },
+				"content": {
+					"type": "object",
+					"additionalProperties": {
+						"$ref": "#/$defs/Media"
+					}
+				},
+				"required": { "type":"boolean" }
+			},
+			"required": ["content"]
+		},
+		"Operation": {
+			"type": "object",
+			"properties": {
+				"tags": {
+					"type": "array",
+					"items": { "type": "string" }
+				},
+				"summary": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"externalDocs": {
+					"$ref": "#/$defs/ExternalDocumentation"
+				},
+				"operationId": {
+					"type": "string"
+				},
+				"parameters": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/Parameter"
+					}
+				},
+				"requestBody": {
+					"$ref": "#/$defs/RequestBody"
+				},
+				"responses": {
+					"type": "object",
+					"patternProperties": {
+						"^1[0-9X][0-9X]$": { "$ref": "#/$defs/Response" },
+						"^2[0-9X][0-9X]$": { "$ref": "#/$defs/Response" },
+						"^3[0-9X][0-9X]$": { "$ref": "#/$defs/Response" },
+						"^4[0-9X][0-9X]$": { "$ref": "#/$defs/Response" },
+						"^5[0-9X][0-9X]$": { "$ref": "#/$defs/Response" }
+					}, "additionalProperties": false
+				}
+			}
+		},
+		"PathItem": {
+			"type": "object",
+			"properties": {
+				"$ref":        { "type": "string", "format":"uri-reference" },
+				"summary":     { "type": "string" },
+				"description": { "type": "string" },
+				"get":         { "$ref": "#/$defs/Operation" },
+				"put":         { "$ref": "#/$defs/Operation" },
+				"post":        { "$ref": "#/$defs/Operation" },
+				"delete":      { "$ref": "#/$defs/Operation" },
+				"options":     { "$ref": "#/$defs/Operation" },
+				"head":        { "$ref": "#/$defs/Operation" },
+				"patch":       { "$ref": "#/$defs/Operation" },
+				"trace":       { "$ref": "#/$defs/Operation" },
+				"servers":     { "$ref": "#/$defs/Server" },
+				"parameters":  {
+					"type": "array",
+					"items": {
+						"oneOf": [
+							{ "$ref": "#/$defs/Parameter" },
+							{ "$ref": "#/$defs/Reference" }
+						]
+					}
+				}
+			}
+		}
+	},
+	"type": "object",
+	"properties": {
+		"$schema": {
+			"type": "string", "format":"uri"
+		},
+		"openapi": {
+			"$ref": "#/$defs/Semver"
+		},
+		"jsonSchemaDialect": {
+			"type": "string",
+			"format":"uri"
+		},
+		"info": {
+			"$ref": "#/$defs/Info"
+		},
+		"servers": {
+			"type": "array",
+			"items": { "$ref": "#/$defs/Server" }
+		},
+		"paths": {
+			"type": "object",
+			"patternProperties": {
+				"^\\\/(?!-)(?:[a-zA-Z0-9-]+|{\\w+})(?<!-)(?:\\\/(?!-)(?:[a-zA-Z0-9-]+|{\\w+})(?<!-))*(\\\/(?!-\\.)[a-zA-Z0-9-\\.]+(?<!-\\.))?$": {
+					"$ref": "#/$defs/PathItem"
+				}
+			}, "additionalProperties": false
+		}
+	}
+}
